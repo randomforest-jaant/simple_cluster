@@ -1,3 +1,4 @@
+import 'package:simple_cluster/src/common.dart';
 import 'package:simple_cluster/src/dbscan.dart';
 
 void main() {
@@ -11,9 +12,11 @@ void main() {
     [54,54],[55,55],[89,89],[57,55]
   ];
 
-  DBSCAN dbscan = DBSCAN(
+  DBSCAN dbscan = DBSCAN<List<double>, List<double>>(
     epsilon: 3,
     minPoints: 2,
+    distanceMeasure: (p0, p1) => euclideanDistance(p0, p1),
+    getPoint: (p0) => p0,
   );
 
   List<List<int>> clusterOutput = dbscan.run(dataset);

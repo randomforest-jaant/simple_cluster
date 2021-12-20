@@ -1,9 +1,9 @@
 import 'package:simple_cluster/src/common.dart';
 
 ///Density-based spatial clustering of applications with noise (DBSCAN)
-class DBSCAN {
+class DBSCAN<T, E> {
   ///Complete list of points (in vector form)
-  late List<List<double>> dataset;
+  late List<T> dataset;
 
   ///Result clusters
   List<List<int>> _cluster = [];
@@ -20,8 +20,9 @@ class DBSCAN {
   ///Minimum points in neighborhood to be considered as a cluster
   final int minPoints;
 
-  ///Distance measurement between two points
-  double Function(List<double>, List<double>) distanceMeasure;
+  final double Function(E, E) distanceMeasure;
+
+  final E Function(T) getPoint;
 
   ///Cluster label
   int? _currentLabel;
@@ -29,9 +30,10 @@ class DBSCAN {
   DBSCAN({
     this.epsilon = 1,
     this.minPoints = 2,
-    this.distanceMeasure = euclideanDistance,
+    required this.getPoint,
+    required this.distanceMeasure
   });
-  
+
   ///Index of points considered as noise
   List<int> get noise {
     return _noise;
@@ -50,7 +52,7 @@ class DBSCAN {
   }
 
   ///Run clustering process, add configs in constructor
-  List<List<int>> run(List<List<double>> dataset) {
+  List<List<int>> run(List<T> dataset) {
     if (dataset == null) {
       throw new Exception("Dataset must not be null");
     }
@@ -68,7 +70,7 @@ class DBSCAN {
       if (_label![i] != -1) continue;
 
       //neighbor indexes
-      List<int> neighbors = _rangeQuery(dataset[i]);
+      List<int> neighbors = _rangeQuery(getPoint(dataset[i]));
 
       if (neighbors.length < minPoints) {
         _noise.add(i);
@@ -104,7 +106,7 @@ class DBSCAN {
       _addToCluster(neighbors[i], _currentLabel!);
 
       //expand neighborhood
-      List<int> expandedNeighbors = _rangeQuery(dataset[neighbors[i]]);
+      List<int> expandedNeighbors = _rangeQuery(getPoint(dataset[neighbors[i]]));
 
       if (expandedNeighbors.length >= minPoints) {
         neighbors = _joinIndexList(neighbors, expandedNeighbors);
@@ -119,10 +121,10 @@ class DBSCAN {
   }
 
   ///Return all point's index within p's eps-neighborhood (including p)
-  List<int> _rangeQuery(List<double> p) {
+  List<int> _rangeQuery(E p) {
     List<int> neighbors = [];
     for (int i = 0; i < dataset.length; i++) {
-      if (distanceMeasure(p, dataset[i]) <= epsilon) {
+      if (distanceMeasure(p, getPoint(dataset[i])) <= epsilon) {
         neighbors.add(i);
       }
     }
