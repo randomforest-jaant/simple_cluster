@@ -15,7 +15,7 @@ void main() {
   DBSCAN dbscan = DBSCAN<List<double>, List<double>>(
     epsilon: 3,
     minPoints: 2,
-    distanceMeasure: (p0, p1) => euclideanDistance(p0, p1),
+    distanceMeasure: (k, p0, p1) => 0,
     getPoint: (p0) => p0,
   );
 

@@ -20,7 +20,7 @@ class DBSCAN<T, E> {
   ///Minimum points in neighborhood to be considered as a cluster
   final int minPoints;
 
-  final double Function(E, E) distanceMeasure;
+  final double Function(List<T>, int, int) distanceMeasure;
 
   final E Function(T) getPoint;
 
@@ -70,7 +70,7 @@ class DBSCAN<T, E> {
       if (_label![i] != -1) continue;
 
       //neighbor indexes
-      List<int> neighbors = _rangeQuery(getPoint(dataset[i]));
+      List<int> neighbors = _rangeQuery(i);
 
       if (neighbors.length < minPoints) {
         _noise.add(i);
@@ -106,7 +106,7 @@ class DBSCAN<T, E> {
       _addToCluster(neighbors[i], _currentLabel!);
 
       //expand neighborhood
-      List<int> expandedNeighbors = _rangeQuery(getPoint(dataset[neighbors[i]]));
+      List<int> expandedNeighbors = _rangeQuery(i);
 
       if (expandedNeighbors.length >= minPoints) {
         neighbors = _joinIndexList(neighbors, expandedNeighbors);
@@ -121,10 +121,10 @@ class DBSCAN<T, E> {
   }
 
   ///Return all point's index within p's eps-neighborhood (including p)
-  List<int> _rangeQuery(E p) {
+  List<int> _rangeQuery(int p) {
     List<int> neighbors = [];
     for (int i = 0; i < dataset.length; i++) {
-      if (distanceMeasure(p, getPoint(dataset[i])) <= epsilon) {
+      if (distanceMeasure(dataset, p, i) <= epsilon) {
         neighbors.add(i);
       }
     }
